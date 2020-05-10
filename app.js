@@ -1,3 +1,4 @@
+require('dotenv').config()
 var express = require('express');
 var app = express();
 var bodyParser = require('body-parser');
@@ -14,7 +15,7 @@ app.set("view engine", "ejs");
 app.use(express.static(__dirname + "/public"));
 
 app.use(session({                               //passport express-session
-    secret: 'This the secret line',              //passport express-session
+    secret: process.env.SECRET,              //passport express-session
     resave: false,                               //passport express-session
     saveUninitialized: false                     //passport express-session
 }));                                            //passport express-session
@@ -22,9 +23,7 @@ app.use(passport.initialize());                 //passport
 app.use(passport.session());                    //passport
 app.use(methodOverride('_method'));
 
-
-mongoose.connect("mongodb+srv://admin:Createw3.@cluster0-byaob.mongodb.net/yelp_camp", { useNewUrlParser: true, useUnifiedTopology: true });
-//mongoose.connect("mongodb://localhost:27017/yelp_camp", { useNewUrlParser: true, useUnifiedTopology: true });
+mongoose.connect(process.env.DATABASEURL, { useNewUrlParser: true, useUnifiedTopology: true });
 //mongoose.set("useCreateIndex",true);
 
 //==================MongooseSchemasAndModels=======================
@@ -279,6 +278,10 @@ function checkCommentOwnership(req,res,next){
     }else{res.redirect('/login');}
 }
 
-app.listen(3000, function () {
+let port = process.env.PORT;
+if (port == null || port == "") {
+  port = 3000;
+}
+app.listen(port, function () {
     console.log("Listening at port 3000");
 });
