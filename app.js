@@ -23,7 +23,7 @@ app.use(passport.initialize());                 //passport
 app.use(passport.session());                    //passport
 app.use(methodOverride('_method'));
 
-mongoose.connect("mongodb+srv://admin:019s9pQgbH7WX40Z@cluster0-byaob.mongodb.net/yelp_camp", { useNewUrlParser: true, useUnifiedTopology: true });
+mongoose.connect(process.env.DATABASEURL, { useNewUrlParser: true, useUnifiedTopology: true });
 //mongoose.set("useCreateIndex",true);
 
 //==================MongooseSchemasAndModels=======================
