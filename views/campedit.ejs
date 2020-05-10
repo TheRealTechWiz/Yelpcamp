@@ -1,0 +1,25 @@
+<%- include('partials/header.ejs');-%>
+<div class="container">
+    <h1 style="text-align: center">Edit <%=camp.name%></h1>
+    <div class="row">
+        <div style="width: 30%; margin: 50px auto;">
+            <form method="POST" action="/camps/<%=camp._id%>?_method=PUT">
+                <div class="form-group">
+                    <input class="form-control" type="text" name="comment[name]" value="<%=camp.name%>"/>
+                </div>
+                <div class="form-group">
+                    <input type="text" name="comment[image]" value="<%=camp.image%>" />
+                </div>
+                <div class="form-group">
+                    <input type="text" name="comment[description]" value="<%=camp.description%>" />
+                </div>
+                <div class="form-group">
+                    <button class="btn btn-lg btn-default btn-black">Submit</button>
+                </div>
+            </form>
+            <a href="/camps">Go Back</a>
+        </div>
+    </div>
+</div>
+
+<%- include('partials/footer.ejs');-%>
