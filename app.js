@@ -15,7 +15,7 @@ app.set("view engine", "ejs");
 app.use(express.static(__dirname + "/public"));
 
 app.use(session({                               //passport express-session
-    secret: process.env.SECRET,              //passport express-session
+    secret: 'This the secret line',              //passport express-session
     resave: false,                               //passport express-session
     saveUninitialized: false                     //passport express-session
 }));                                            //passport express-session
