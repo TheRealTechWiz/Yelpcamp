@@ -254,7 +254,9 @@ app.delete('/camps/:id/comments/:comment_id',checkCommentOwnership,function(req,
     })
 });
 
-
+app.get('*',function(req,res){
+    res.render('notfound');
+});
 
 function isLoggedIn(req,res,next){
     if(req.isAuthenticated()){
