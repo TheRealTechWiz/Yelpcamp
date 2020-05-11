@@ -42,7 +42,18 @@
           </ul>
         </div>  
       </nav>
-     
-<!-- https://cdn.stocksnap.io/img-thumbs/280h/camp-outdoor_AD4M0GTYS8.jpg
+     <div class="container">
+<%if(error&&error.length>0){%>
+        <div class="alert alert-danger" role="alert">
+          <%=error%>
+        </div>
+<%}%>
+<%if(success&&success.length>0){%>
+        <div class="alert alert-success" role="alert">
+          <%=success%>
+        </div>
+<%}%>
+     </div>
+<!-- https://cdn.stocksnap>.io/img-thumbs/280h/camp-outdoor_AD4M0GTYS8.jpg
 https://images.pexels.com/photos/1687845/pexels-photo-1687845.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500
 https://images.pexels.com/photos/2398220/pexels-photo-2398220.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500 -->

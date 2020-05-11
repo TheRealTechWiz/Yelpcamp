@@ -8,6 +8,7 @@ var passport = require('passport');             //passport
 var passportLocalMongoose = require('passport-local-mongoose');   //passport
 var LocalStrategy = require('passport-local');
 var methodOverride = require('method-override');
+var flash = require('connect-flash');
 
 
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -22,6 +23,7 @@ app.use(session({                               //passport express-session
 app.use(passport.initialize());                 //passport
 app.use(passport.session());                    //passport
 app.use(methodOverride('_method'));
+app.use(flash());
 
 mongoose.connect(process.env.DATABASEURL, { useNewUrlParser: true, useUnifiedTopology: true });
 //mongoose.set("useCreateIndex",true);
@@ -71,6 +73,8 @@ passport.deserializeUser(User.deserializeUser());   //passport passport-local-mo
 
 app.use(function(req,res,next){
     res.locals.currentUser = req.user;
+    res.locals.error = req.flash('error');
+    res.locals.success = req.flash('success');
     next();
 });
 
@@ -86,7 +90,7 @@ app.get("/camps/new",isLoggedIn, function (req, res) {
 
 app.get("/camps", function (req, res) {
     Campground.find({}, function (err, cmp) {
-        if (err) { console.log(err); }
+        if (err) { console.log(err);req.flash('error',err.message); }
         else { res.render("camps", { campgrounds: cmp }); }
     });
 });
@@ -94,7 +98,7 @@ app.get("/camps", function (req, res) {
 
 app.get("/camps/:id", function (req, res) {
     Campground.findById(req.params.id).populate("comment").exec(function (err, cmp) {
-        if (err) { console.log(err); }
+        if (err) { console.log(err);req.flash('error',err.message); }
         else { res.render("campsdes", { campgrounds: cmp }); }
     });
 });
@@ -104,8 +108,10 @@ app.post("/camps",isLoggedIn, function (req, res) {
     var newcamp = { name: req.body.name, image: req.body.image, description: req.body.description,author:createdAuthor };
     //Campgrounds.push(newcamp);
     Campground.create(newcamp, function (err, cmp) {
-        if (err) { console.log(err); }
-        else { console.log("Campground Created"); console.log(cmp); res.redirect("/camps"); }
+        if (err) { console.log(err);req.flash('error',err.message); }
+        else { console.log("Campground Created"); console.log(cmp);
+        req.flash('success','Successfully created');
+        res.redirect("/camps"); }
     });
 });
 
@@ -119,9 +125,11 @@ app.post("/register", function (req, res) {
     User.register({ username: req.body.username }, req.body.password, function (err, user) {
         if (err) {
             console.log(err);
-            res.render("register");
+            req.flash('error',err.message);
+            res.redirect("/register");
         } else {
             passport.authenticate("local")(req, res, function () {
+                req.flash('success','Welcome '+user.username);
                 res.redirect("/camps");
             });
         }
@@ -152,6 +160,7 @@ app.post("/login",passport.authenticate("local",{successRedirect:"/camps",failur
 
 app.get("/logout", function (req, res) {
    req.logout();
+   req.flash('success','Successfuly Logged Out');
    res.redirect('/');
 });
 
@@ -159,8 +168,7 @@ app.get("/logout", function (req, res) {
 //======================comment==================
 
 app.get("/camps/:id/comments/new",isLoggedIn, function (req, res) {
-    var theid = req.params.id;
-    res.render("newcomment", { campid: theid });
+    res.render("newcomment", { campid: req.params.id });
 });
 
 app.post("/camps/:id/comments",isLoggedIn, function (req, res) {
@@ -168,16 +176,17 @@ app.post("/camps/:id/comments",isLoggedIn, function (req, res) {
     var cmnt = req.body.comment;
 
     Campground.findById(req.params.id, function (err, cmp) {
-        if (err) { console.log(err); }
+        if (err) { console.log(err);req.flash('error',err.message); }
         else {
             Comments.create(cmnt, function (err, createdComment) {
-                if (err) { console.log(err); }
+                if (err) { console.log(err);req.flash('error',err.message); }
                 else {
                     createdComment.author.id=req.user._id;
                     createdComment.author.username=req.user.username;
                     createdComment.save();
                     cmp.comment.push(createdComment);
                     cmp.save();
+                    req.flash('success','Comment Successfully created');
                     res.redirect("/camps/" + foundid);
                 }
             });
@@ -188,7 +197,7 @@ app.post("/camps/:id/comments",isLoggedIn, function (req, res) {
 //=====================campEdit=============
 app.get("/camps/:id/edit",checkCampOwnership,function(req,res){
     Campground.findById(req.params.id,function(err,cmp){
-        if(err){console.log(err);}
+        if(err){console.log(err);req.flash('error',err.message);}
         else{
             res.render('campedit',{camp:cmp});
         }
@@ -197,9 +206,10 @@ app.get("/camps/:id/edit",checkCampOwnership,function(req,res){
 
 app.put("/camps/:id",checkCampOwnership,function(req,res){
     Campground.findByIdAndUpdate(req.params.id,req.body.comment,function(err,editedCamp){
-        if(err){console.log(err);}
+        if(err){console.log(err);req.flash('error',err.message);}
         else{
             console.log(editedCamp);
+            req.flash('success','Successfully Edited');
             res.redirect('/camps/'+req.params.id);
         }
     });
@@ -210,6 +220,7 @@ app.delete('/camps/:id',checkCampOwnership,function(req,res){
         if(err){console.log(err);}
         else{
             console.log("Successfully Deleted");
+            req.flash('success','Successfully Deleted');
             res.redirect('/camps');
         }
     });
@@ -228,15 +239,18 @@ app.get('/camps/:id/comments/:comment_id/edit',checkCommentOwnership,function(re
 
 app.put('/camps/:id/comments/:comment_id',checkCommentOwnership,function(req,res){
     Comments.findByIdAndUpdate(req.params.comment_id,req.body.comment,function(err){
-        if(err){console.log(err);}
-        else{res.redirect('/camps/'+req.params.id);}
+        if(err){console.log(err);req.flash('error',err.message);}
+        else{req.flash('success','Comment Successfully Edited');res.redirect('/camps/'+req.params.id);}
     })
 });
 
 app.delete('/camps/:id/comments/:comment_id',checkCommentOwnership,function(req,res){
     Comments.findByIdAndDelete(req.params.comment_id,function(err){
         if(err){console.log(err);}
-        else{res.redirect('/camps/'+req.params.id);}
+        else{
+            req.flash('success','Successfully Deleted');
+            res.redirect('/camps/'+req.params.id);
+        }
     })
 });
 
@@ -246,6 +260,7 @@ function isLoggedIn(req,res,next){
     if(req.isAuthenticated()){
         return next();
     }else{
+        req.flash('error','You must login first');
         res.redirect('/login');
     }
 }
@@ -258,10 +273,16 @@ function checkCampOwnership(req,res,next){
                 if(foundcamp.author.id.equals(req.user._id)){
                     next();
                 }
-                else{res.redirect('back');}
+                else{
+                    req.flash('error',"You don't have the permission to do that");
+                    res.redirect('back');
+                }
             }
         });
-    }else{res.redirect('/login');}
+    }else{
+        req.flash('error','You must login first');
+        res.redirect('/login');
+    }
 }
 
 function checkCommentOwnership(req,res,next){
@@ -272,10 +293,16 @@ function checkCommentOwnership(req,res,next){
                 if(foundcom.author.id.equals(req.user._id)){
                     next();
                 }
-                else{res.redirect('back');}
+                else{
+                    req.flash('error',"You don't have the permission to do that");
+                    res.redirect('back');
+                }
             }
         });
-    }else{res.redirect('/login');}
+    }else{
+        req.flash('error','You must login first');
+        res.redirect('/login');
+    }
 }
 
 let port = process.env.PORT;
