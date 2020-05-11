@@ -1,7 +1,30 @@
-<%- include('partials/header.ejs');-%>
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>YelpCamp</title>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+        <link rel="stylesheet" href="/stylesheets/home.css">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js" type="text/javascript" async></script>
+    </head>
+    <body>
+    
+    <div id="landing-header">
+ 		<h1>Welcome to Camps Project!</h1>
+		<a href="/camps" class="btn btn-success btn-lg">View All Camps</a>
+    </div>
+    
+    <ul class="slideshow">
+      <li></li>
+      <li></li>
+      <li></li>
+      <li></li>
+      <li></li>
+    </ul>
 
+<%- include('partials/footer.ejs');-%>
+<%/*%>
 <h1>Home Page</h1>
 <a class="btn btn-primary" href="/camps">Go to Camps Page</a>
 <br><br>
 <a href="/camps/new" class="btn btn-primary">Go to create page</a>
-<%- include('partials/footer.ejs');-%>
+<%- include('partials/footer.ejs');-%><%*/%>
